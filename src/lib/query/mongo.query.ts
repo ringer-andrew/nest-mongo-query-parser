@@ -24,7 +24,7 @@ export const MongoQuery: () => ParameterDecorator = createParamDecorator(
   }
 );
 
-function parse(query: any): MongoQueryModel {
+export function parse(query: any): MongoQueryModel {
   const def_limit = 100;
   const def_skip = 0;
   const def_page = 1;
