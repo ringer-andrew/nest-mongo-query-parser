@@ -167,9 +167,26 @@ function getSimpleFilterValue(
 ): string | number | boolean | Date | object | null {
   if (!filter) return null;
 
+  if (isElementMatchFilter(filter)) {
+    const first_dot_index: number = filter.indexOf('}');
+    const operator: string = filter.substring(1, first_dot_index);
+    const value: string = filter.substring(first_dot_index + 1);
+    if (!value) {
+      return null;
+    }
+
+    const elemMatchUrlSearchParams = new URLSearchParams(value.replace(',','&'));
+    let constructElemMatchFilter: any = {};
+    elemMatchUrlSearchParams.forEach(( value, key) => {
+      constructElemMatchFilter[key] = value;
+    })
+
+    return { [`$${operator}`]: getFilter(constructElemMatchFilter, {}) };
+  }
+
   if (isComparisonFilter(filter)) {
-    const first_dot_index: number = filter.indexOf(':');
-    const operator: string = filter.substring(0, first_dot_index);
+    const first_dot_index: number = filter.indexOf('}');
+    const operator: string = filter.substring(1, first_dot_index);
     const value: string = filter.substring(first_dot_index + 1);
     if (!value) {
       return null;
@@ -178,8 +195,8 @@ function getSimpleFilterValue(
   }
 
   if (isElementFilter(filter)) {
-    const first_dot_index: number = filter.indexOf(':');
-    const operator: string = filter.substring(0, first_dot_index);
+    const first_dot_index: number = filter.indexOf('}');
+    const operator: string = filter.substring(1, first_dot_index);
     const value: string = filter.substring(first_dot_index + 1);
     if (!value) {
       return null;
@@ -230,19 +247,24 @@ function getSimpleFilterValue(
 
 function isComparisonFilter(filter: string): boolean {
   return (
-    filter.startsWith('eq:') ||
-    filter.startsWith('gt:') ||
-    filter.startsWith('gte:') ||
-    filter.startsWith('in:') ||
-    filter.startsWith('lt:') ||
-    filter.startsWith('lte:') ||
-    filter.startsWith('ne:') ||
-    filter.startsWith('nin:')
+    filter.startsWith('{eq}') ||
+    filter.startsWith('{gt}') ||
+    filter.startsWith('{gte}') ||
+    filter.startsWith('{in}') ||
+    filter.startsWith('{lt}') ||
+    filter.startsWith('{lte}') ||
+    filter.startsWith('{ne}') ||
+    filter.startsWith('{nin}') || 
+    filter.startsWith('{elemMatch}')
   );
 }
 
 function isElementFilter(filter: string): boolean {
-  return filter.startsWith('exists:') || filter.startsWith('type:');
+  return filter.startsWith('{exists}') || filter.startsWith('{type}');
+}
+
+function isElementMatchFilter(filter: string): boolean{
+  return filter.startsWith('{elemMatch}');
 }
 
 function isSimpleFilter(value: string): boolean {
