@@ -1,4 +1,4 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { ConsoleLogger, createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { MongoQueryModel, QueryObjectModel } from '../model/mongo.query.model';
 import { StringUtils } from '../utils/string.util';
 import { StringValidator } from '../utils/string.validator';
@@ -37,7 +37,7 @@ export function parse(query: any): MongoQueryModel {
     : getIntKey(query, 'skip', def_skip);
   result.select = getSelect(query, {});
   result.sort = getSort(query, {});
-  result.populate = getPopulate(query, []);
+  // result.populate = getPopulate(query, []);
   result.filter = getFilter(query, {});
 
   return result;
@@ -96,10 +96,10 @@ function getPopulate(
   const result: QueryObjectModel = { path };
 
   if (select && select !== 'all') {
-    result.select = getSelect({ select }, {});
+    result['select'] = getSelect({ select }, {});
   }
   if (filter) {
-    result.match = getFilter(url.parse(`?${filter}`, true).query, {});
+    result['match'] = getFilter(url.parse(`?${filter}`, true).query, {});
   }
 
   return result;
